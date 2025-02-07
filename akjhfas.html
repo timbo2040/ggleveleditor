@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .grid { display: grid; gap: 1px; }
+        .cell { width: 15px; height: 15px; border: 1px solid #ccc; text-align: center; line-height: 15px; background-size: cover; }
+    </style>
+</head>
+<body>
+    <h1>Level Editor</h1>
+    <label for="gridWidth">Width:</label>
+    <input type="number" id="gridWidth" value="20" min="1">
+    <label for="gridHeight">Height:</label>
+    <input type="number" id="gridHeight" value="20" min="1">
+    <button onclick="generateGrid()">Generate Grid</button>
+    <br>
+    <label for="tileNumber">Tile Number:</label>
+    <input type="number" id="tileNumber" value="1" min="0">
+    <div id="grid" class="grid"></div>
+    <button onclick="exportLevel()">Export Level</button>
+    <button onclick="copyLevel()">Copy to Clipboard</button>
+    
+    <script>
+        const grid = document.getElementById("grid");
+        const tileNumberInput = document.getElementById("tileNumber");
+        let drawing = false;
+        let selectedTile = parseInt(tileNumberInput.value, 10);
+        let levelData = [];
+
+        // Define image mappings
+        const tileImages = {
+            0: '',
+            1: 'grass.png',
+            2: 'blue_brick_top.png',
+            3: 'blue_brick_bottom.png',
+	    11: 'sign.png',
+        };
+
+        tileNumberInput.addEventListener("input", () => {
+            selectedTile = parseInt(tileNumberInput.value, 10);
+        });
+
+        function generateGrid() {
+            const width = parseInt(document.getElementById("gridWidth").value, 10);
+            const height = parseInt(document.getElementById("gridHeight").value, 10);
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${width}, 15px)`;
+            levelData = Array.from({ length: height }, () => Array(width).fill(0));
+            
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.addEventListener("mousedown", () => { drawing = true; updateCell(cell, row, col); });
+                    cell.addEventListener("mouseover", () => { if (drawing) updateCell(cell, row, col); });
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function updateCell(cell, row, col) {
+            cell.style.backgroundImage = `url('${tileImages[selectedTile]}')`;
+            levelData[row][col] = selectedTile;
+        }
+
+        function exportLevel() {
+            const text = levelData.map(row => row.join(" ")).join("\n");
+            const blob = new Blob([text], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "level.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function copyLevel() {
+            const text = levelData.map(row => row.join(" ")).join("\n");
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Level data copied to clipboard!");
+            }).catch(err => {
+                console.error("Failed to copy: ", err);
+            });
+        }
+
+        document.addEventListener("mouseup", () => drawing = false);
+        generateGrid();
+    </script>
+</body>
+</html>
