@@ -23,8 +23,6 @@
     <div id="grid" class="grid"></div>
     <button onclick="exportLevel()">Export Level</button>
     <button onclick="copyLevel()">Copy to Clipboard</button>
-    <button onclick="importLevel()">Import Level</button>
-    <input type="file" id="importFile" style="display: none" onchange="handleFileImport(event)">
     
     <script>
         const grid = document.getElementById("grid");
@@ -36,9 +34,10 @@
         // Define image mappings
         const tileImages = {
             0: '',
-            1: 'grass.png',
-            2: 'https://via.placeholder.com/30?text=2',
-            3: 'https://via.placeholder.com/30?text=3',
+            1: 'greybox.png',
+            2: 'blue_brick_top.png',
+            3: 'blue_brick_bottom.png',
+	    11: 'sign.png',
         };
 
         tileNumberInput.addEventListener("input", () => {
@@ -88,37 +87,6 @@
             }).catch(err => {
                 console.error("Failed to copy: ", err);
             });
-        }
-
-        function importLevel() {
-            document.getElementById("importFile").click();
-        }
-
-        function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const rows = text.split("\n").map(row => row.split(" ").map(Number));
-                document.getElementById("gridWidth").value = rows[0].length;
-                document.getElementById("gridHeight").value = rows.length;
-                generateGrid();
-                levelData = rows;
-                updateGridDisplay();
-            };
-            reader.readAsText(file);
-        }
-
-        function updateGridDisplay() {
-            const cells = grid.children;
-            let index = 0;
-            for (let row = 0; row < levelData.length; row++) {
-                for (let col = 0; col < levelData[row].length; col++) {
-                    const cell = cells[index++];
-                    cell.style.backgroundImage = `url('${tileImages[levelData[row][col]]}')`;
-                }
-            }
         }
 
         document.addEventListener("mouseup", () => drawing = false);
